@@ -7,10 +7,13 @@ use core::ptr::null;
 #[cfg(feature = "axstd")]
 use axstd::println;
 
+#[cfg(feature = "axstd")]
+use axstd::process::exit;
+
 
 const SYS_HELLO: usize = 1;
 const SYS_PUTCHAR: usize = 2;
-
+const SYS_TERMINATE: usize = 3;
 static mut ABI_TABLE: [usize; 16] = [0; 16];
 
 fn register_abi(num: usize, handle: usize) {
@@ -25,7 +28,10 @@ fn abi_putchar(c: char) {
     println!("[ABI:Print] {c}");
 }
 
-
+fn abi_terminate() {
+    println!("[ABI:Terminate] Terminate Apps!");
+    exit(0);
+}
 
 
 const PLASH_START: usize = 0xffff_ffc0_2200_0000;
@@ -76,6 +82,7 @@ fn main() {
 
     register_abi(SYS_HELLO, abi_hello as usize);
     register_abi(SYS_PUTCHAR, abi_putchar as usize);
+    register_abi(SYS_TERMINATE, abi_terminate as usize);
 
 	println!("Execute app ...");
     let arg0: u8 = b'A';
@@ -105,7 +112,8 @@ fn main() {
         run_start = const RUN_START,
         abi_table = sym ABI_TABLE,
         //abi_num = const SYS_HELLO,
-        abi_num = const SYS_PUTCHAR,
+        // abi_num = const SYS_PUTCHAR,
+        abi_num = const SYS_TERMINATE,
         in("a0") arg0,
     )}
 }
